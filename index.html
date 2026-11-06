@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Grupa 131 · Inițiere în Ofițer — Biblioteca de studiu</title>
+  <meta name="description" content="Biblioteca digitală a cursanților Grupei 131 — cursul de formare inițială a ofițerilor: Instrucția de front, AROP, Instrucția tragerii, Prim ajutor, TIP.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b2447">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/img/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/app.css">
+  <script>
+    /* apply saved preferences before first paint (no flash) */
+    (function () {
+      try {
+        var s = JSON.parse(localStorage.getItem('g131.prefs') || '{}');
+        var d = document.documentElement;
+        var q = /[?&]lang=(ro|ru)\b/.exec(location.search);
+        if (q) { s.lang = q[1]; localStorage.setItem('g131.prefs', JSON.stringify(s)); }
+        if (s.lang === 'ru') d.lang = 'ru';
+        if (s.theme === 'dark' || (!s.theme && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) d.setAttribute('data-theme', 'dark');
+        if (s.scale) d.style.setProperty('--fs-scale', s.scale);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Treci la conținut</a>
+
+  <header class="topbar" id="topbar">
+    <div class="topbar__inner">
+      <button class="icon-btn topbar__menu" id="menuBtn" type="button" aria-label="Meniu" aria-controls="drawer" aria-expanded="false" data-i18n-aria="menu">
+        <svg class="ico"><use href="#i-menu"/></svg>
+      </button>
+
+      <a class="brand" href="#/" aria-label="Grupa 131 — Acasă">
+        <svg class="brand__logo" viewBox="0 0 64 72" aria-hidden="true"><use href="#logo-badge"/></svg>
+        <span class="brand__text">
+          <span class="brand__title">Grupa <b>131</b></span>
+          <span class="brand__sub" data-i18n="brandSub">Inițiere în Ofițer</span>
+        </span>
+      </a>
+
+      <form class="topsearch" id="topSearch" role="search" autocomplete="off">
+        <svg class="ico topsearch__ico" aria-hidden="true"><use href="#i-search"/></svg>
+        <input type="search" id="topSearchInput" name="q" enterkeyhint="search"
+               data-i18n-ph="searchPh" placeholder="Caută o temă, un termen, un articol…" aria-label="Căutare">
+        <kbd class="topsearch__kbd" aria-hidden="true">/</kbd>
+      </form>
+
+      <div class="topbar__tools">
+        <button class="icon-btn topbar__searchbtn" id="searchBtn" type="button" aria-label="Căutare" data-i18n-aria="search">
+          <svg class="ico"><use href="#i-search"/></svg>
+        </button>
+
+        <div class="fs-wrap">
+          <button class="icon-btn fs-btn" id="fsBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="fsPop" aria-label="Mărimea textului" data-i18n-aria="fontSize">
+            <span class="fs-btn__aa" aria-hidden="true">A<small>A</small></span>
+          </button>
+          <div class="fs-pop" id="fsPop" hidden>
+            <div class="fs-pop__label" data-i18n="fontSize">Mărimea textului</div>
+            <div class="seg seg--fs seg--wide" role="group">
+              <button type="button" class="seg__btn" data-fs="-1" aria-label="Micșorează textul" data-i18n-aria="fsDown">A<span class="minus">−</span></button>
+              <button type="button" class="seg__btn" data-fs="0" aria-label="Mărime implicită" data-i18n-aria="fsReset">A</button>
+              <button type="button" class="seg__btn" data-fs="1" aria-label="Mărește textul" data-i18n-aria="fsUp">A<span class="plus">+</span></button>
+            </div>
+            <div class="fs-pop__value" id="fsValue">100%</div>
+          </div>
+        </div>
+
+        <div class="seg seg--fs seg--bar" role="group" aria-label="Mărimea textului" data-i18n-aria="fontSize">
+          <button type="button" class="seg__btn" data-fs="-1" aria-label="Micșorează textul" data-i18n-aria="fsDown">A<span class="minus">−</span></button>
+          <button type="button" class="seg__btn" data-fs="0" aria-label="Mărime implicită" data-i18n-aria="fsReset">A</button>
+          <button type="button" class="seg__btn" data-fs="1" aria-label="Mărește textul" data-i18n-aria="fsUp">A<span class="plus">+</span></button>
+        </div>
+
+        <div class="seg seg--lang" role="group" aria-label="Limba / Язык">
+          <button type="button" class="seg__btn" data-lang="ro" aria-pressed="true" title="Română (limba de stat)">RO</button>
+          <button type="button" class="seg__btn" data-lang="ru" aria-pressed="false" title="Русский">RU</button>
+        </div>
+
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Temă întunecată / luminoasă" data-i18n-aria="theme">
+          <svg class="ico ico--moon"><use href="#i-moon"/></svg>
+          <svg class="ico ico--sun"><use href="#i-sun"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="police-band" aria-hidden="true"></div>
+  </header>
+
+  <!-- side drawer (mobile navigation + course list) -->
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <nav class="drawer" id="drawer" aria-label="Navigare" data-i18n-aria="nav" hidden>
+    <div class="drawer__head">
+      <svg class="brand__logo" viewBox="0 0 64 72" aria-hidden="true"><use href="#logo-badge"/></svg>
+      <div>
+        <div class="drawer__title">Grupa 131</div>
+        <div class="drawer__sub" data-i18n="brandSub">Inițiere în Ofițer</div>
+      </div>
+      <button class="icon-btn drawer__close" id="drawerClose" type="button" aria-label="Închide" data-i18n-aria="close">
+        <svg class="ico"><use href="#i-x"/></svg>
+      </button>
+    </div>
+    <div class="drawer__body" id="drawerBody"></div>
+    <div class="drawer__foot">
+      <div class="drawer__label" data-i18n="fontSize">Mărimea textului</div>
+      <div class="seg seg--fs seg--wide" role="group">
+        <button type="button" class="seg__btn" data-fs="-1">A<span class="minus">−</span></button>
+        <button type="button" class="seg__btn" data-fs="0">A</button>
+        <button type="button" class="seg__btn" data-fs="1">A<span class="plus">+</span></button>
+      </div>
+      <div class="drawer__label" data-i18n="language">Limba</div>
+      <div class="seg seg--lang seg--wide" role="group">
+        <button type="button" class="seg__btn" data-lang="ro">Română</button>
+        <button type="button" class="seg__btn" data-lang="ru">Русский</button>
+      </div>
+      <div class="drawer__label" data-i18n="themeLabel">Tema</div>
+      <div class="seg seg--wide" role="group">
+        <button type="button" class="seg__btn" data-theme-set="light" data-i18n="themeLightBtn">Luminoasă</button>
+        <button type="button" class="seg__btn" data-theme-set="dark" data-i18n="themeDarkBtn">Întunecată</button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main" class="main" tabindex="-1">
+    <div class="boot">
+      <svg class="boot__logo" viewBox="0 0 64 72" aria-hidden="true"><use href="#logo-badge"/></svg>
+      <noscript><p>Pentru a folosi biblioteca, activați JavaScript. / Для работы сайта включите JavaScript.</p></noscript>
+    </div>
+  </main>
+
+  <footer class="footer" id="footer">
+    <div class="police-band police-band--thin" aria-hidden="true"></div>
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <svg class="brand__logo" viewBox="0 0 64 72" aria-hidden="true"><use href="#logo-badge"/></svg>
+        <div>
+          <div class="footer__title">Grupa 131 · <span data-i18n="brandSub">Inițiere în Ofițer</span></div>
+          <div class="footer__text" data-i18n="footerText">Platformă de studiu creată de cursanți pentru cursanți.</div>
+        </div>
+      </div>
+      <p class="footer__note" data-i18n="footerNote">Site neoficial, cu scop exclusiv educațional. Materialele aparțin autorilor și instituțiilor emitente.</p>
+      <p class="footer__links">
+        <a href="#/" data-i18n="home">Acasă</a> ·
+        <a href="#/cautare" data-i18n="search">Căutare</a> ·
+        <a href="#/despre" data-i18n="about">Despre</a>
+      </p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <button class="totop" id="toTop" type="button" aria-label="Sus" data-i18n-aria="toTop" hidden>
+    <svg class="ico"><use href="#i-arrow-up"/></svg>
+  </button>
+
+  <!-- SVG sprite: icons + badge -->
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <linearGradient id="g-gold" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f3d77a"/><stop offset=".55" stop-color="#d4a72c"/><stop offset="1" stop-color="#a87f16"/>
+      </linearGradient>
+      <linearGradient id="g-navy" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1d4e9e"/><stop offset="1" stop-color="#0b2447"/>
+      </linearGradient>
+    </defs>
+    <symbol id="logo-badge" viewBox="0 0 64 72">
+      <path d="M32 2 60 12v22c0 17.5-11.6 30.4-28 36C15.6 64.4 4 51.5 4 34V12Z" fill="url(#g-gold)"/>
+      <path d="M32 7.5 55 15.8V34c0 14.6-9.5 25.6-23 30.6C18.5 59.6 9 48.6 9 34V15.8Z" fill="url(#g-navy)"/>
+      <path d="M32 12.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L32 27.3l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9Z" fill="url(#g-gold)"/>
+      <text x="32" y="51" text-anchor="middle" font-family="Oswald Variable, Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="17" fill="#fff" letter-spacing=".5">131</text>
+      <path d="M14 56.5c5 4.6 11 7.6 18 9.6 7-2 13-5 18-9.6" fill="none" stroke="url(#g-gold)" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></g></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9v11h13V9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-slides" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8" stroke-linecap="round"/></g></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></g></symbol>
+    <symbol id="i-law" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0Zm14 0-3 6a3 3 0 0 0 6 0Z"/></g></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></g></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9h8M8 12h8M8 15h5"/></g></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h11M4 18h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-pages" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7" y="3" width="13" height="16" rx="1.5"/><path d="M4 7v12.5A1.5 1.5 0 0 0 5.5 21H16" stroke-linecap="round"/></g></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></g></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-shrink" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></g></symbol>
+    <symbol id="i-zoom-in" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></g></symbol>
+    <symbol id="i-zoom-out" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6"/></g></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></g></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3Z"/></g></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></g></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></g></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/></g></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></g></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3Z"/></g></symbol>
+
+    <!-- course icons -->
+    <symbol id="c-front" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="1.8"/><circle cx="12" cy="5" r="1.8"/><circle cx="18" cy="5" r="1.8"/><path d="M6 8.5v6M12 8.5v6M18 8.5v6M4.5 21l1.5-6.5 1.5 6.5M10.5 21l1.5-6.5 1.5 6.5M16.5 21l1.5-6.5 1.5 6.5M3.5 11h5M9.5 11h5M15.5 11h5"/></g></symbol>
+    <symbol id="c-arop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 19.5 5.5v6.2c0 4.8-3.1 8.4-7.5 9.9-4.4-1.5-7.5-5.1-7.5-9.9V5.5Z"/><path d="M8.5 12h7M12 8.5v7"/></g></symbol>
+    <symbol id="c-tragere" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".9" fill="currentColor"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4"/></g></symbol>
+    <symbol id="c-prim" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M10 7h4v3h3v4h-3v3h-4v-3H7v-4h3Z"/></g></symbol>
+    <symbol id="c-tip" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 11V5.8a1.6 1.6 0 0 1 3.2 0V10M10.7 9.5V4.6a1.6 1.6 0 0 1 3.2 0v5M13.9 9.6V5.8a1.6 1.6 0 0 1 3.2 0V13c0 4.4-2.9 7.5-6.6 7.5-2.6 0-4.3-1.3-5.6-3.4L3.2 13.4a1.6 1.6 0 0 1 2.7-1.6l1.6 2.2"/></g></symbol>
+    <symbol id="c-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5 12 4l10 4.5-10 4.5Z"/><path d="M6 10.5V16c2 1.8 4 2.5 6 2.5s4-.7 6-2.5v-5.5M22 8.5v6"/></g></symbol>
+  </svg>
+
+  <script src="assets/js/i18n.js"></script>
+  <script src="data/catalog.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

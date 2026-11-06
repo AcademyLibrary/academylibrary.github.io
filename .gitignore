@@ -1,0 +1,15 @@
+# original course files (large; the site uses the converted versions in content/)
+/AROP/
+/Prim ajutor/
+/TIP/
+/instructia front/
+/instrucția tragerii/
+
+# build cache (PDF conversions, OCR cache, stamps)
+/_build/
+
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+~$*

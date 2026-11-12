@@ -4,6 +4,9 @@
 /TIP/
 /instructia front/
 /instrucția tragerii/
+/AnotherFiles(FromAnotherCourses)/
+# schedule photos (the site has the transcribed, interactive schedule in data/orar.js)
+/Orar/
 
 # build cache (PDF conversions, OCR cache, stamps)
 /_build/

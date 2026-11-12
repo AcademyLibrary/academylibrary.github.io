@@ -1,10 +1,10 @@
 # Converts the original Office files (ppt/pptx/doc/docx) into PDF (+ Open XML copies of
 # legacy .ppt/.doc files) using the locally installed Microsoft Office.
 # Output goes to _build\pdf and _build\ox (both git-ignored). Already converted files are skipped.
-# Usage:  powershell -ExecutionPolicy Bypass -File tools\convert_office.ps1 [-TimeoutSec 240]
+# Usage:  powershell -ExecutionPolicy Bypass -File tools\convert_office.ps1 [-TimeoutSec 240] [-Only "part of a file name"]
 # Note: kept ASCII-only on purpose (Windows PowerShell 5.1 reads BOM-less scripts as ANSI).
 
-param([int]$TimeoutSec = 240)
+param([int]$TimeoutSec = 240, [string]$Only = '')
 
 $ErrorActionPreference = 'Stop'
 $root    = Split-Path -Parent $PSScriptRoot
@@ -21,7 +21,8 @@ $files = foreach ($s in $sources) {
     $dir = Join-Path $root $s
     if (Test-Path -LiteralPath $dir) {
         Get-ChildItem -LiteralPath $dir -Recurse -File |
-            Where-Object { $_.Name -notlike '~$*' -and $_.Extension -match '^\.(pptx?|docx?)$' }
+            Where-Object { $_.Name -notlike '~$*' -and $_.Extension -match '^\.(pptx?|docx?)$' -and
+                           (-not $Only -or $_.Name.IndexOf($Only, [StringComparison]::OrdinalIgnoreCase) -ge 0) }
     }
 }
 

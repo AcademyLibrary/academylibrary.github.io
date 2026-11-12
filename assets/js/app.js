@@ -6,6 +6,7 @@
   const C = window.LIB_CATALOG;
   const I = window.I18N;
   const DOCS = C.docs;
+  const O = window.LIB_ORAR || null;  // schedule (data/orar.js)
   const main = document.getElementById('main');
   const courseById = Object.fromEntries(C.courses.map(c => [c.id, c]));
 
@@ -210,6 +211,7 @@
     body.innerHTML =
       link('#/', 'i-home', t('home')) +
       link('#/cautare', 'i-search', t('search')) +
+      (O ? link('#/orar', 'i-calendar', t('orar'), O.group) : '') +
       '<div class="drawer__sep"></div>' +
       C.courses.map(c => { const p = courseProgress(c); return link('#/curs/' + c.id, c.icon, courseTitle(c), c.subtitle ? L(c.subtitle) : t('progress', p), c.color); }).join('') +
       '<div class="drawer__sep"></div>' +
@@ -330,6 +332,167 @@
 
   function setTitle(s) { document.title = (s ? s + ' · ' : '') + 'Grupa 131 · Inițiere în Ofițer'; }
 
+  // ------------------------------------------------------------------ schedule (orar)
+  const pad2 = n => String(n).padStart(2, '0');
+  const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;  // local date, never UTC
+  const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const toMin = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+  const nowMin = d => d.getHours() * 60 + d.getMinutes();
+  const daysBetween = (a, b) => Math.round((parseYmd(ymd(b)) - parseYmd(ymd(a))) / 864e5);
+  const tl = key => t(key).split('|');
+  const dayName = d => tl('daysLong')[(d.getDay() + 6) % 7];
+  const dayShort = d => tl('daysShort')[(d.getDay() + 6) % 7];
+  const dateLong = d => `${dayName(d)}, ${d.getDate()} ${tl('months')[d.getMonth()]}`;
+  const dateShort = d => `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
+  const modColor = m => ((O && O.modules[m]) || {}).color || '#64748b';
+  const modLabel = s => (s.m ? t('moduleN', { n: s.m + (s.t ? '.' + s.t : '') }) : '');
+  const untilLabel = mins => (mins < 60 ? t('inMin', { n: mins }) : t('inHours', { h: Math.floor(mins / 60), m: mins % 60 }));
+
+  let orarCache = null;
+  function orarDays() {  // flat list of school days with their lessons
+    if (!O) return [];
+    if (!orarCache) {
+      orarCache = [];
+      O.weeks.forEach((w, wi) => w.days.forEach((lessons, di) => {
+        const date = addDays(parseYmd(w.start), di);
+        const key = ymd(date);
+        orarCache.push({
+          date, key, week: wi,
+          lessons: lessons.map(([slot, sk, who]) => {
+            const s = O.subjects[sk] || { m: '', ro: sk, ru: sk };
+            const [start, end] = O.slots[slot] || ['00:00', null];
+            const startMin = toMin(start);
+            return { id: `${key}-${slot}`, s, who, start, end, startMin, endMin: end ? toMin(end) : startMin + 90, exam: !!s.exam, m: s.m };
+          }).sort((a, b) => a.startMin - b.startMin)
+        });
+      }));
+    }
+    return orarCache;
+  }
+  function lessonState(day, l, now) {
+    const k = ymd(now);
+    if (day.key !== k) return day.key < k ? 'done' : 'future';
+    const tm = nowMin(now);
+    return tm < l.startMin ? 'future' : tm < l.endMin ? 'now' : 'done';
+  }
+  function weekIndexFor(now) {
+    const k = ymd(now);
+    const i = O.weeks.findIndex(w => k >= w.start && k <= ymd(addDays(parseYmd(w.start), 6)));
+    if (i >= 0) return i;
+    const next = O.weeks.findIndex(w => w.start > k);
+    return next >= 0 ? next : O.weeks.length - 1;
+  }
+  function orarFocus(now) {  // today while it still has lessons, otherwise the next school day
+    const days = orarDays();
+    if (!days.length) return null;
+    const k = ymd(now);
+    const today = days.find(d => d.key === k);
+    if (today && today.lessons.some(l => nowMin(now) < l.endMin)) return { day: today, isToday: true };
+    const next = days.find(d => d.key > k);
+    return next ? { day: next, isToday: false, todayDone: !!today } : { ended: true };
+  }
+  function lessonLink(s) {
+    if (!s.link) return null;
+    const [kind, id] = s.link.split(':');
+    if (kind === 'curs' && courseById[id]) return '#/curs/' + id;
+    if (kind === 'doc' && DOCS[id]) return docUrl(id);
+    return null;
+  }
+  const lessonCourse = s => {
+    if (!s.link) return null;
+    const [kind, id] = s.link.split(':');
+    return kind === 'curs' ? id : (DOCS[id] && DOCS[id].course) || null;
+  };
+  function orarStatusHtml(now) {
+    const f = orarFocus(now);
+    if (!f || f.ended || !f.isToday) return '';
+    const tm = nowMin(now);
+    const cur = f.day.lessons.find(l => tm >= l.startMin && tm < l.endMin);
+    const nxt = f.day.lessons.find(l => tm < l.startMin);
+    let html = '';
+    if (cur) {
+      const pct = Math.round((tm - cur.startMin) * 100 / (cur.endMin - cur.startMin));
+      html += `<div class="ostatus ostatus--now"><span class="live-dot"></span><div><b>${esc(t('now'))}:</b> ${esc(L(cur.s))} <span class="muted">· ${cur.start}–${cur.end || ''}</span><div class="ostatus__bar"><span style="width:${pct}%"></span></div></div></div>`;
+    }
+    if (nxt) html += `<div class="ostatus">${icon('i-clock')}<div><b>${esc(t('nextLesson'))}:</b> ${esc(L(nxt.s))} <span class="muted">· ${nxt.start} (${esc(untilLabel(nxt.startMin - tm))})</span></div></div>`;
+    return html;
+  }
+  function lessonHtml(day, l, now) {
+    const st = lessonState(day, l, now);
+    const href = lessonLink(l.s);
+    const first = day.lessons.find(x => lessonState(day, x, now) !== 'done');
+    const isNext = st === 'future' && day.key === ymd(now) && first === l;
+    const badge = st === 'now'
+      ? `<span class="lesson__state lesson__state--now"><span class="live-dot"></span>${esc(t('now'))}</span>`
+      : isNext ? `<span class="lesson__state">${esc(t('nextLesson'))} · ${esc(untilLabel(l.startMin - nowMin(now)))}</span>` : '';
+    return `<li class="lesson is-${st}${l.exam ? ' is-exam' : ''}${isNext ? ' is-next' : ''}" style="--m:${modColor(l.m)}">
+      <div class="lesson__time"><b>${l.start}</b>${l.end ? `<span>${l.end}</span>` : ''}</div>
+      <div class="lesson__body">
+        <div class="lesson__top">${l.m ? `<span class="lesson__mod">${esc(modLabel(l.s))}</span>` : ''}${l.exam ? `<span class="lesson__exam">${icon('i-exam')}${esc(t('exam'))}</span>` : ''}${badge}</div>
+        <div class="lesson__title" lang="${lang}">${esc(L(l.s))}</div>
+        <div class="lesson__who">${esc(l.who)}</div>
+        ${href ? `<a class="lesson__link" href="${href}">${icon('i-book')}${esc(t('toMaterials'))}</a>` : ''}
+      </div>
+    </li>`;
+  }
+  function dayHtml(day, now) {
+    const k = ymd(now);
+    let items = '';
+    let prev = null;
+    for (const l of day.lessons) {
+      if (prev && prev.endMin <= toMin('13:20') && l.startMin >= toMin('14:30')) {
+        items += `<li class="lesson-break">${icon('i-coffee')}${esc(t('lunch'))} · ${prev.end}–${l.start}</li>`;
+      }
+      items += lessonHtml(day, l, now);
+      prev = l;
+    }
+    return `<section class="oday${day.key === k ? ' is-today' : day.key < k ? ' is-past' : ''}" id="d-${day.key}">
+      <header class="oday__head"><span class="oday__name">${esc(dayName(day.date))}</span><span class="oday__date">${dateShort(day.date)}</span>${day.key === k ? `<span class="oday__today">${esc(t('today'))}</span>` : ''}</header>
+      <ol class="oday__list">${items}</ol>
+    </section>`;
+  }
+  function homeOrarHtml(now) {
+    if (!O) return '';
+    const f = orarFocus(now);
+    if (!f || f.ended) return '';
+    const title = f.isToday ? t('todayTitle') : t('nextDayTitle');
+    const when = !f.isToday && daysBetween(now, f.day.date) === 1 ? `${t('tomorrow')} · ${dateLong(f.day.date)}` : dateLong(f.day.date);
+    return `<div class="section__head"><div><h2 class="section__title">${esc(title)}</h2><p class="section__sub">${esc(when)} · ${esc(O.group)}${f.todayDone ? ' · ' + esc(t('dayOver')) : ''}</p></div><a class="link-more" href="#/orar">${icon('i-calendar')}${esc(t('fullOrar'))}${icon('i-chev-r')}</a></div>
+      <div class="today-card">${orarStatusHtml(now)}<ol class="oday__list oday__list--row">${f.day.lessons.map(l => lessonHtml(f.day, l, now)).join('')}</ol></div>`;
+  }
+  function upcomingHtml(courseId, now) {  // course page: next lessons of this discipline
+    if (!O) return '';
+    const all = [];
+    for (const d of orarDays()) for (const l of d.lessons) if (lessonCourse(l.s) === courseId) all.push({ d, l });
+    if (!all.length) return '';
+    const next = all.filter(({ d, l }) => lessonState(d, l, now) !== 'done').slice(0, 4);
+    return `<div class="panel"><h2 class="panel__title">${icon('i-calendar')}${esc(t('inOrar'))}</h2>${next.length
+      ? `<ul class="upcoming">${next.map(({ d, l }) => `<li style="--accent:${modColor(l.m)}"><b>${esc(dayShort(d.date))} ${dateShort(d.date)} · ${l.start}${l.end ? '–' + l.end : ''}${l.exam ? ' · ' + esc(t('exam')) : ''}</b><span>${esc(L(l.s))}</span></li>`).join('')}</ul>`
+      : `<p class="empty-note" style="margin:0">${esc(t('noUpcoming'))}</p>`}
+      <a class="link-more" href="#/orar" style="margin-top:.6rem">${esc(t('fullOrar'))}${icon('i-chev-r')}</a></div>`;
+  }
+  function downloadIcs() {
+    const icsEsc = s => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+    const fold = line => { const out = []; let s = line; while (s.length > 72) { out.push(s.slice(0, 72)); s = ' ' + s.slice(72); } out.push(s); return out.join('\r\n'); };
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+    const dt = (date, min) => `${ymd(date).replace(/-/g, '')}T${pad2(Math.floor(min / 60))}${pad2(min % 60)}00`;
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Grupa 131//Orar//RO', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', fold('X-WR-CALNAME:' + icsEsc('Orar · ' + O.group))];
+    orarDays().forEach(d => d.lessons.forEach(l => {
+      const title = (l.exam ? t('exam').toUpperCase() + ' · ' : '') + (l.m ? modLabel(l.s) + ' · ' : '') + L(l.s);
+      lines.push('BEGIN:VEVENT', `UID:${l.id}@grupa131`, 'DTSTAMP:' + stamp, 'DTSTART:' + dt(d.date, l.startMin), 'DTEND:' + dt(d.date, l.endMin),
+        fold('SUMMARY:' + icsEsc(title)), fold('DESCRIPTION:' + icsEsc(l.who)), 'END:VEVENT');
+    }));
+    lines.push('END:VCALENDAR');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/calendar;charset=utf-8' }));
+    a.download = 'orar-plutonul-131.ics';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast(t('icsDone'));
+  }
+
   // ------------------------------------------------------------------ views
   const QUICK = [
     { ro: 'Codul roșu', ru: 'Красный код', q: 'codul roșu' },
@@ -369,6 +532,7 @@
           <div class="stat"><span class="stat__ico">${icon('i-slides')}</span><div><div class="stat__num">${s.slides}</div><div class="stat__label">${esc(t('statSlides'))}</div></div></div>
           <div class="stat"><span class="stat__ico">${icon('i-pages')}</span><div><div class="stat__num">${s.pages}</div><div class="stat__label">${esc(t('statPages'))}</div></div></div>
         </div>
+        <section class="section" id="homeOrar">${homeOrarHtml(new Date())}</section>
         ${rec.length ? `
         <section class="section">
           <div class="section__head">
@@ -399,6 +563,7 @@
             <div class="tip"><span class="tip__ico">${icon('i-globe')}</span><div><b>${esc(t('tip2'))}</b><p>${esc(t('tip2t'))}</p></div></div>
             <div class="tip"><span class="tip__ico">${icon('i-search')}</span><div><b>${esc(t('tip3'))}</b><p>${esc(t('tip3t'))}</p></div></div>
             <div class="tip"><span class="tip__ico">${icon('i-check')}</span><div><b>${esc(t('tip4'))}</b><p>${esc(t('tip4t'))}</p></div></div>
+            ${O ? `<a class="tip tip--link" href="#/orar"><span class="tip__ico">${icon('i-calendar')}</span><div><b>${esc(t('tip5'))}</b><p>${esc(t('tip5t'))}</p></div></a>` : ''}
           </div>
         </section>
       </div>`;
@@ -407,6 +572,10 @@
     main.querySelectorAll('.hero__chips [data-q]').forEach(b => b.addEventListener('click', () => goSearch(b.dataset.q)));
     const clr = document.getElementById('clearRecent');
     if (clr) clr.addEventListener('click', () => { recent = []; store.set('g131.recent', recent); route({ keepScroll: true }); });
+    const box = document.getElementById('homeOrar');
+    if (!box.innerHTML.trim()) box.remove();
+    const timer = setInterval(() => { const b = document.getElementById('homeOrar'); if (b) b.innerHTML = homeOrarHtml(new Date()); }, 60000);
+    return () => clearInterval(timer);
   }
 
   function viewCourse(c) {
@@ -446,6 +615,7 @@
             </section>`).join('')}
         </div>
         <aside class="course-aside">
+          ${upcomingHtml(c.id, new Date())}
           ${c.sections.length > 1 ? `<div class="panel"><h2 class="panel__title">${icon('i-list')}${esc(t('courseContents'))}</h2>
             <nav class="toc">${c.sections.map(s => `<button type="button" data-scroll="sec-${s.key}">${esc(L(s.title))} (${s.docs.length})</button>`).join('')}</nav></div>` : ''}
           ${c.related && c.related.length ? `<div class="panel"><h2 class="panel__title">${icon('i-book')}${esc(t('relatedTitle'))}</h2>
@@ -458,6 +628,111 @@
       const el = document.getElementById(b.dataset.scroll);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }));
+  }
+
+  // ------------------------------------------------------------------ schedule page
+  function viewOrar(params) {
+    if (!O) { viewNotFound(); return null; }
+    setTitle(t('orar'));
+    const days = orarDays();
+    const first = days[0].date;
+    const last = days[days.length - 1].date;
+    const exams = [];
+    days.forEach(d => d.lessons.forEach(l => { if (l.exam) exams.push({ d, l }); }));
+    const curWi = weekIndexFor(new Date());
+    let wi = O.weeks.findIndex(w => w.start === params.get('w'));
+    if (wi < 0) wi = curWi;
+    main.innerHTML = `
+      <section class="phead orar-head" style="--accent:#d4a72c">
+        <div class="wrap">
+          ${crumbs([{ href: '#/', label: t('home') }, { label: t('orar') }])}
+          <div class="phead__row">
+            <span class="phead__icon">${icon('i-calendar')}</span>
+            <div>
+              <div class="phead__kicker">${esc(O.group)} · ${esc(t('orar'))}</div>
+              <h1 class="phead__title">${esc(t('orarTitle'))}</h1>
+            </div>
+          </div>
+          <p class="phead__desc">${esc(L(O.program))}. ${esc(t('orarWeeks', { n: O.weeks.length, from: dateShort(first), to: `${dateShort(last)}.${last.getFullYear()}` }))}</p>
+          <div class="phead__meta">
+            <span class="chip chip--gold" id="weekChip"></span>
+            <span class="chip">${icon('i-exam')}${esc(t('examsCount', { n: exams.length }))}</span>
+            <button type="button" class="btn btn--sm" id="icsBtn">${icon('i-download')}<span>${esc(t('addCalendar'))}</span></button>
+          </div>
+        </div>
+      </section>
+      <div class="vbar"><div class="wrap vbar__inner orar-bar">
+        <button type="button" class="btn btn--sm btn--icon" id="wPrev" aria-label="${esc(t('prevWeek'))}" title="${esc(t('prevWeek'))}">${icon('i-chev-l')}</button>
+        <div class="weeks" id="weeks" role="tablist">${O.weeks.map((w, i) => {
+          const s = parseYmd(w.start);
+          const e = addDays(s, 4);
+          const range = s.getMonth() === e.getMonth() ? `${s.getDate()}–${e.getDate()} ${tl('monthsShort')[e.getMonth()]}` : `${s.getDate()} ${tl('monthsShort')[s.getMonth()]} – ${e.getDate()} ${tl('monthsShort')[e.getMonth()]}`;
+          return `<button type="button" role="tab" data-w="${i}" aria-selected="${i === wi}"${i === curWi ? ' data-current="1"' : ''}><b>${esc(t('weekShort', { n: i + 1 }))}</b><span>${esc(range)}</span></button>`;
+        }).join('')}</div>
+        <button type="button" class="btn btn--sm btn--icon" id="wNext" aria-label="${esc(t('nextWeek'))}" title="${esc(t('nextWeek'))}">${icon('i-chev-r')}</button>
+        <span class="vbar__spacer"></span>
+        <button type="button" class="btn btn--sm" id="wToday">${icon('i-calendar')}<span>${esc(t('currentWeek'))}</span></button>
+      </div></div>
+      <div class="wrap orar">
+        <div id="ostatus"></div>
+        <div class="orar-grid" id="ogrid"></div>
+        <div class="orar-info">
+          <section class="panel"><h2 class="panel__title">${icon('i-exam')}${esc(t('exams'))}</h2><ol class="exams" id="oexams"></ol></section>
+          <section class="panel"><h2 class="panel__title">${icon('i-grid')}${esc(t('modulesTitle'))}</h2><ul class="mods" id="omods"></ul></section>
+        </div>
+        <p class="orar-note">${icon('i-info')}<span>${esc(t('orarNote'))}</span></p>
+      </div>`;
+
+    function render() {
+      const now = new Date();
+      const wdays = days.filter(d => d.week === wi);
+      document.getElementById('weekChip').innerHTML = icon('i-calendar') + esc(t('weekN', { n: wi + 1, t: O.weeks.length }));
+      document.querySelectorAll('#weeks [data-w]').forEach(b => b.setAttribute('aria-selected', String(+b.dataset.w === wi)));
+      document.getElementById('wPrev').disabled = wi === 0;
+      document.getElementById('wNext').disabled = wi === O.weeks.length - 1;
+      document.getElementById('ostatus').innerHTML = wi === weekIndexFor(now) ? orarStatusHtml(now) : '';
+      document.getElementById('ogrid').innerHTML = wdays.map(d => dayHtml(d, now)).join('');
+      let nextShown = false;
+      document.getElementById('oexams').innerHTML = exams.map(({ d, l }) => {
+        const diff = daysBetween(now, d.date);
+        const past = lessonState(d, l, now) === 'done';
+        const isNext = !past && !nextShown;
+        if (isNext) nextShown = true;
+        const when = past ? t('examPast') : diff === 0 ? t('examToday') : diff === 1 ? t('examTomorrow') : t('inDays', { n: diff });
+        return `<li class="exam${past ? ' is-past' : ''}${isNext ? ' is-next' : ''}" style="--m:${modColor(l.m)}">
+          <div class="exam__date"><b>${dateShort(d.date)}</b><span>${esc(dayShort(d.date))} · ${l.start}</span></div>
+          <div><div class="exam__mod">${esc(t('moduleN', { n: l.m }))}<span class="exam__when">${esc(when)}</span></div>
+          <div class="exam__title">${esc(L(l.s))}</div><div class="exam__who">${esc(l.who)}</div></div></li>`;
+      }).join('');
+      const counts = {};
+      wdays.forEach(d => d.lessons.forEach(l => { if (!l.exam) counts[l.m] = (counts[l.m] || 0) + 1; }));
+      document.getElementById('omods').innerHTML = Object.keys(O.modules).map(m => {
+        const md = O.modules[m];
+        return `<li style="--m:${md.color}"><span class="mods__dot"></span><div><b>${esc(m ? t('moduleN', { n: m }) : L(md))}</b>${m ? `<span>${esc(L(md))}</span>` : ''}<small>${md.hours ? esc(t('hoursN', { n: md.hours })) + ' · ' : ''}${esc((counts[m] || 0) === 1 ? t('pairsWeek1') : counts[m] ? t('pairsWeek', { n: counts[m] }) : t('pairsWeek0'))}</small></div></li>`;
+      }).join('');
+      const h = '#/orar' + (wi !== weekIndexFor(now) ? '?w=' + O.weeks[wi].start : '');
+      if (location.hash !== h) history.replaceState(null, '', h);
+    }
+    const go = i => {
+      wi = clamp(i, 0, O.weeks.length - 1);
+      render();
+      const tab = document.querySelector(`#weeks [data-w="${wi}"]`);
+      const bar = document.getElementById('weeks');
+      if (tab) bar.scrollTo({ left: tab.offsetLeft - bar.clientWidth / 2 + tab.clientWidth / 2, behavior: 'smooth' });
+    };
+    const scrollToToday = () => {
+      const td = document.querySelector('.oday.is-today');
+      if (td && td !== document.querySelector('.oday')) td.scrollIntoView({ block: 'start' });
+    };
+    document.getElementById('wPrev').onclick = () => go(wi - 1);
+    document.getElementById('wNext').onclick = () => go(wi + 1);
+    document.getElementById('wToday').onclick = () => { go(weekIndexFor(new Date())); scrollToToday(); };
+    document.getElementById('weeks').addEventListener('click', e => { const b = e.target.closest('[data-w]'); if (b) go(+b.dataset.w); });
+    document.getElementById('icsBtn').onclick = downloadIcs;
+    go(wi);
+    if (wi === curWi && window.matchMedia('(max-width: 1100px)').matches) requestAnimationFrame(scrollToToday);
+    const timer = setInterval(render, 60000);
+    return () => clearInterval(timer);
   }
 
   // ------------------------------------------------------------------ document viewer
@@ -1126,9 +1401,10 @@
     closeDrawer();
     const [a, b] = parts;
     let cleanupFn;
-    if (!a) viewHome();
+    if (!a) cleanupFn = viewHome();
     else if (a === 'curs' && courseById[b]) viewCourse(courseById[b]);
     else if (a === 'doc' && DOCS[b]) cleanupFn = viewDoc(b, params);
+    else if (a === 'orar') cleanupFn = viewOrar(params);
     else if (a === 'cautare') viewSearch(params.get('q') || '', params.get('c') || '');
     else if (a === 'despre') viewAbout();
     else viewNotFound();

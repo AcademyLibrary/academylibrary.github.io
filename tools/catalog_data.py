@@ -114,6 +114,23 @@ COURSES = [
         ],
         'related': ['trg-ordin-311', 'trg-ghid-interventie', 'trg-legea-218'],
     },
+    {
+        'id': 'alte', 'icon': 'c-other', 'color': '#0e7490', 'code': None,
+        'title': {'ro': 'Alte cursuri', 'ru': 'Другие курсы'},
+        'short': {'ro': 'Materiale din alte module ale cursului: integritatea instituțională și altele.',
+                  'ru': 'Материалы других модулей курса: институциональная неподкупность и другое.'},
+        'desc': {'ro': 'Materiale primite de la alte cursuri și module ale programului de formare inițială — de exemplu, Modulul III '
+                       '„Integritatea și deontologia profesională”. Materialele din alte cursuri care există deja în bibliotecă sunt '
+                       'indicate în panoul „Materiale conexe”.',
+                 'ru': 'Материалы, полученные от других курсов и модулей программы первоначальной подготовки — например, модуля III '
+                       '«Неподкупность и профессиональная деонтология». Материалы других курсов, которые уже есть в библиотеке, '
+                       'указаны в панели «Связанные материалы».'},
+        'sections': [
+            ('studiu', ['integritate-fpss']),
+        ],
+        # files from AnotherFiles(FromAnotherCourses) that are byte-identical to materials already in the library
+        'related': ['pa-112', 'pa-svb', 'front-prezentare', 'trg-ordin-222'],
+    },
 ]
 
 # Materials that are not tied to one discipline (shown on the home / about pages).
@@ -787,6 +804,34 @@ DOCS = {
                        'Приёмы обездвиживания и доставление с применением силы.',
                        'Использование средств обездвиживания (наручники и др.).',
                        'Служебные собаки: в наморднике без поводка, без намордника на поводке, без намордника и без поводка — в предусмотренных случаях.']},
+    ),
+
+    # ------------------------------------------------------------------ ALTE CURSURI
+    'integritate-fpss': dict(
+        src='AnotherFiles(FromAnotherCourses)/Integritatea_FPSS_MAI_perfectionare.pptx', kind='slides', type='presentation',
+        media='none',       # embedded videos are third-party footage (news report, body camera, interview) - not published
+        blur_pages=[51, 52, 82],  # video stills, licence plates and social-media screenshots with people's names
+        kicker={'ro': 'Modulul III · Integritate instituțională', 'ru': 'Модуль III · Институциональная неподкупность'},
+        title={'ro': 'Măsurile de cultivare a integrității instituționale',
+               'ru': 'Меры по укреплению институциональной неподкупности'},
+        summary={'ro': 'Integritatea personală, profesională și instituțională, subiecții integrității, măsurile de asigurare a integrității '
+                       '(incompatibilități, declararea averii, conflictul de interese, cadourile, influențele necorespunzătoare, avertizorii '
+                       'de integritate), testarea integrității profesionale, monitorizarea stilului de viață și controlul integrității — cu studii de caz.',
+                 'ru': 'Личная, профессиональная и институциональная неподкупность, её субъекты, меры обеспечения неподкупности '
+                       '(несовместимость, декларирование имущества, конфликт интересов, подарки, ненадлежащее влияние, информаторы о '
+                       'нарушениях), тестирование профессиональной неподкупности, мониторинг образа жизни и контроль — с практическими кейсами.'},
+        points={'ro': ['Integritate profesională — capacitatea agentului public de a activa etic, liber de influențe necorespunzătoare și de corupție, cu respectarea interesului public, a Constituției și a legii.',
+                       'Integritate instituțională — integritatea tuturor agenților publici ai entității, cultivată și controlată de conducător, cu toleranță zero față de incidentele de integritate.',
+                       'Conflictul de interese poate fi potențial, real sau consumat; cel real se declară în scris conducătorului în termen de 3 zile.',
+                       'Cadourile inadmisibile sunt interzise; cele admisibile (din politețe sau de protocol) se declară și se înscriu în registru.',
+                       'Declarația de avere și interese personale: la angajare sau eliberare — în 30 de zile; anuală — între 1 ianuarie și 31 martie.',
+                       'Testele de integritate profesională sunt realizate de CNA și SIS, cu autorizarea instanței; rezultatul poate fi pozitiv, negativ sau neconcludent.'],
+                'ru': ['Профессиональная неподкупность — способность публичного агента работать этично, без ненадлежащего влияния и коррупции, соблюдая общественный интерес, Конституцию и закон.',
+                       'Институциональная неподкупность — неподкупность всех публичных агентов учреждения, которую воспитывает и контролирует руководитель, при нулевой терпимости к инцидентам.',
+                       'Конфликт интересов бывает потенциальным, реальным или совершённым; о реальном нужно письменно сообщить руководителю в течение 3 дней.',
+                       'Недопустимые подарки запрещены; допустимые (из вежливости или протокольные) декларируются и вносятся в реестр.',
+                       'Декларация об имуществе и личных интересах: при приёме или увольнении — в течение 30 дней; ежегодная — с 1 января по 31 марта.',
+                       'Тесты профессиональной неподкупности проводят НЦБК (CNA) и СИБ (SIS) с разрешения суда; результат — положительный, отрицательный или неубедительный.']},
     ),
 
     # ------------------------------------------------------------------ GENERAL

@@ -29,7 +29,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import fitz  # PyMuPDF
 import mammoth
-from PIL import Image, ImageStat
+from PIL import Image, ImageFilter, ImageStat
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE, PP_PLACEHOLDER
 
@@ -162,14 +162,19 @@ def open_pdf(pdf_path, redactor):
     return doc
 
 
-def render_pages(doc, out_dir, kind, keep):
-    """Render the kept pages to WebP. Returns [(w, h), ...] in display order."""
+def render_pages(doc, out_dir, kind, keep, blur=()):
+    """Render the kept pages to WebP. Returns [(w, h), ...] in display order.
+    Pages listed in `blur` (original 1-based numbers) are blurred beyond recognition."""
     target = SLIDE_W if kind == 'slides' else PAGE_W
     sizes = []
     for n, pno in enumerate(keep, 1):
         page = doc[pno]
         zoom = target / page.rect.width
         img = pix_to_image(page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False))
+        if pno + 1 in blur:
+            img = img.resize((max(1, img.width // 24), max(1, img.height // 24)), Image.BILINEAR)
+            img = img.resize((target, round(target * page.rect.height / page.rect.width)), Image.BILINEAR)
+            img = img.filter(ImageFilter.GaussianBlur(8))
         encode_page(img, os.path.join(out_dir, f'p{n:03d}.webp'), kind)
         if kind == 'slides' or n == 1:
             th = img.copy()
@@ -299,6 +304,9 @@ def build_slides(meta, ox, pdf_doc, out_dir, keep, red):
         pdf_text = clean_ws(pdf_doc[pno].get_text()) if pno < len(pdf_doc) else ''
         if not plain and pdf_text:  # SmartArt / diagrams: fall back to the rendered text
             html = f'<p>{esc(pdf_text)}</p>'
+        if pno + 1 in (meta.get('blur_pages') or ()):  # blurred slide: say why instead of showing its text
+            html, plain, pdf_text = ('<p class="empty-note">Video și imagini prezentate doar la curs — '
+                                     'nu sunt publicate pe site.</p>'), '', ''
         media = []
         if s is not None and policy != 'none':
             seen = set()
@@ -770,6 +778,8 @@ def stamps_of(meta, src):
     """(images stamp, text stamp): page images are re-rendered only when the source or the redactions change."""
     st = os.stat(src)
     base = [st.st_size, int(st.st_mtime), {k: meta.get(k) for k in ('kind', 'redact', 'redact_re', 'skip_pages', 'src')}]
+    if meta.get('blur_pages'):  # only where used, so the stamps of the other documents stay valid
+        base.append({'blur_pages': meta['blur_pages']})
     return _sha([IMG_VERSION, base]), _sha([TXT_VERSION, base, meta.get('media')])
 
 
@@ -822,7 +832,7 @@ def build_doc(doc_id, meta, src, force=False):
         if os.path.isdir(out_dir):
             shutil.rmtree(out_dir)
         os.makedirs(out_dir)
-        sizes = render_pages(doc, out_dir, kind, keep)
+        sizes = render_pages(doc, out_dir, kind, keep, set(meta.get('blur_pages') or ()))
     else:  # text only: keep page images (and already encoded media), drop old document images
         if os.path.isdir(os.path.join(out_dir, 'img')):
             shutil.rmtree(os.path.join(out_dir, 'img'))

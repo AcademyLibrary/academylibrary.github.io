@@ -13,6 +13,9 @@ Toate materialele disciplinelor se citesc direct pe site, de pe telefon sau calc
 | Instrucția tragerii | 8 prezentări (măsuri de siguranță, codificări de alertă, balistică, cartușe…), suporturi de curs, Legile nr. 218/2012 și nr. 130/2012, Ordinele MAI nr. 222/2017 și nr. 311/2015, ghidul intervenției profesionale |
 | Prim ajutor | Suport vital bazal, Serviciul 112, sinteză, IPSSM 15/2020, Manualul european de prim ajutor |
 | TIP | Tema 1–5: tactica intervenției profesionale |
+| Alte cursuri | Modulul III: măsurile de cultivare a integrității instituționale; trimiteri la materialele comune cu alte cursuri |
+
+**Orar** — orarul interactiv al Plutonului 131 (6 săptămâni, 09.11 – 18.12.2026): orele de azi cu „Acum / Urmează”, săptămânile, examenele cu numărătoare inversă, legenda modulelor, legături către materialele disciplinelor și export în calendar (.ics).
 
 ## Funcții
 
@@ -30,11 +33,16 @@ index.html             pagina aplicației (o singură pagină, navigare prin #/�
 assets/css, js, fonts  stiluri, cod, fonturi (Inter, Oswald — SIL OFL)
 data/catalog.js        discipline, secțiuni, titluri și rezumate RO/RU (generat)
 data/search.js         indexul de căutare (generat)
+data/orar.js           orarul (editat manual)
 content/<material>/    imaginile paginilor/slide-urilor + doc.js cu textul (generat)
 tools/                 scripturile de conversie și catalogul materialelor
 ```
 
 Fișierele originale (pptx/ppt/doc/pdf) nu sunt incluse în depozit — site-ul folosește versiunile convertite.
+
+## Actualizarea orarului
+
+Orarul este în `data/orar.js`: fiecare săptămână are data de început (luni) și cinci zile; fiecare oră este `[interval, disciplină, profesori]` (intervalele `a`–`e`, `x` = examen; disciplinele sunt definite în `subjects`). Pentru o săptămână nouă se adaugă un bloc în `weeks` — nu este nevoie de recompilare.
 
 ## Adăugarea sau actualizarea materialelor (Windows)
 

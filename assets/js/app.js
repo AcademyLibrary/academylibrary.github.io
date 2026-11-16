@@ -1018,9 +1018,9 @@
         else { a.target = '_blank'; a.rel = 'noopener'; }
       });
       prose.querySelectorAll('img').forEach(im => { im.loading = 'lazy'; im.decoding = 'async'; im.alt = im.alt || ''; });
-      const scrollToEl = el => {
+      const scrollToEl = (el, instant) => {
         const offset = document.getElementById('topbar').offsetHeight + document.getElementById('vbar').offsetHeight + 12;
-        window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: 'smooth' });
+        window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: instant ? 'auto' : 'smooth' });
       };
       content.querySelectorAll('.toc [data-target]').forEach(b => b.addEventListener('click', () => {
         const el = document.getElementById(b.dataset.target);
@@ -1114,7 +1114,7 @@
           window.scrollTo(0, restoreY);
         } else if (page > 1) {
           const anchor = anchorFor(page);
-          if (anchor) scrollToEl(anchor);
+          if (anchor) scrollToEl(anchor, true);  // opening at a page: jump, don't animate
         }
         restoreY = null;
         onScroll();

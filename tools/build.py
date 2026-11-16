@@ -41,7 +41,7 @@ BUILD = os.path.join(ROOT, '_build')
 CONTENT = os.path.join(ROOT, 'content')
 DATA = os.path.join(ROOT, 'data')
 IMG_VERSION = 1  # bump to re-render every page image
-TXT_VERSION = 3  # bump to regenerate the text / search data of every document (fast)
+TXT_VERSION = 5  # bump to regenerate the text / search data of every document (fast)
 
 SLIDE_W, PAGE_W, THUMB_W = 1280, 1100, 320
 Q_SLIDE, Q_PAGE, Q_SCAN, Q_THUMB = 80, 74, 64, 70
@@ -558,7 +558,7 @@ def _fold_txt(s):
     return re.sub(r'[^0-9a-zа-яё]+', '', s)  # letters and digits only: robust to spacing/punctuation differences
 
 
-def insert_page_markers(blocks, page_texts):
+def insert_page_markers(blocks, page_texts, min_len=18):
     """Put <div class="page-sep"> before the block where each PDF page starts (Word documents)."""
     folded = [_fold_txt(''.join(el.itertext())) for el in blocks]
     marks = {0: 1}
@@ -567,7 +567,7 @@ def insert_page_markers(blocks, page_texts):
         probe = None
         for line in text.splitlines():
             f = _fold_txt(re.sub(r'^\s*([\d\.\)\-–•●▪]+\s*)+', '', line))
-            if len(f) >= 18 and not f.isdigit():
+            if len(f) >= min_len and not f.isdigit():
                 probe = f[:28]
                 break
         if not probe:
@@ -734,6 +734,31 @@ def pdf_html(doc, keep):
     return finish_html(blocks)
 
 
+def page_search_texts(doc, keep, red):
+    """Per-page text for the search index, without running headers/footers and page numbers
+    (otherwise a header such as "Siguranță · PM Makarov · Legea 218" makes every page match).
+    Only lines in the top/bottom 8% of the page count as headers: some PDFs (e.g. Legea 218)
+    have one word per line, and common words must not be dropped from the body."""
+    pages, edge = [], Counter()
+    for p in keep:
+        page = doc[p]
+        h = page.rect.height
+        lines = []
+        for b in page.get_text('dict')['blocks']:
+            if b.get('type') != 0:
+                continue
+            for l in b['lines']:
+                t = clean_ws(''.join(s['text'] for s in l['spans']))
+                if t:
+                    lines.append((t, l['bbox'][1] < h * 0.08 or l['bbox'][3] > h * 0.92))
+        pages.append(lines)
+        edge.update({t for t, at_edge in lines if at_edge})
+    running = {t for t, n in edge.items() if n >= max(3, len(pages) * 0.3)} if len(pages) >= 3 else set()
+    return [[n, clean_ws(red(' '.join(t for t, at_edge in lines
+                                      if not (at_edge and (t in running or re.fullmatch(r'\d+(\s*/\s*\d+)?', t))))))]
+            for n, lines in enumerate(pages, 1)]
+
+
 def fragment_html(path, page_texts):
     """Text view from a hand-made HTML fragment (meta['text_html'], e.g. written by tools/ghid-tragere/make.py)
     instead of the PDF heuristics; page markers are placed by the PDF's page texts."""
@@ -745,7 +770,7 @@ def fragment_html(path, page_texts):
     running = {l for l, n in seen.items() if n >= max(3, len(lines) * 0.3)}
     page_texts = ['\n'.join(l for l in ls if l not in running and not re.fullmatch(r'\d+(\s*/\s*\d+)?', l)) for ls in lines]
     if len(page_texts) > 1:
-        blocks = insert_page_markers(blocks, page_texts)
+        blocks = insert_page_markers(blocks, page_texts, min_len=12)  # short headings start pages here
     return finish_html(blocks)
 
 
@@ -871,7 +896,7 @@ def build_doc(doc_id, meta, src, force=False):
         html, toc = pdf_html(doc, keep)
         payload['html'], payload['toc'] = html, toc
     if kind in ('doc', 'pdf'):
-        search = [[n, clean_ws(red(doc[p].get_text()))] for n, p in enumerate(keep, 1)]
+        search = page_search_texts(doc, keep, red)
     if kind == 'scan':
         texts = ocr_pages(doc, keep, os.path.join(BUILD, 'ocr', doc_id + '.json'))
         search = [[n, t] for n, t in enumerate(texts, 1)]

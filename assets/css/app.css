@@ -748,6 +748,11 @@ mark.is-active { background: var(--mark-active); box-shadow: 0 0 0 2px var(--mar
   .topbar__tools { gap: .2rem; }
   .topbar__inner { gap: .35rem; }
 }
+@media (max-width: 410px) {
+  /* small phones: the shield logo (with "131") stays, its caption goes, so that every button fits */
+  .brand__text { display: none; }
+}
+.topbar .icon-btn, .topbar .seg { flex: none; }  /* never squeeze the menu or a tool button to nothing */
 @media (max-width: 680px) {
   .orar-grid { grid-template-columns: minmax(0, 1fr); }
   #wToday span { display: none; }

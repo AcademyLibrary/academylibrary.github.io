@@ -7,6 +7,8 @@
 kind:  slides (presentation) | doc (Word document) | pdf (text PDF) | scan (scanned PDF)
 type:  key in TYPES below (label shown on cards)
 mode:  default view in the reader: slides | text | pages
+text_html: (pdf only) hand-made HTML fragment for the "Text" view instead of the automatic PDF text,
+       e.g. tools/ghid-tragere/text.html written by tools/ghid-tragere/make.py
 """
 
 SITE = {
@@ -25,9 +27,11 @@ TYPES = {
     'regulation':   {'ro': 'Regulament', 'ru': 'Устав / Положение', 'icon': 'i-law'},
     'manual':       {'ro': 'Manual', 'ru': 'Учебник', 'icon': 'i-book'},
     'guide':        {'ro': 'Ghid', 'ru': 'Руководство', 'icon': 'i-book'},
+    'prep':         {'ro': 'Ghid de pregătire', 'ru': 'Пособие для подготовки', 'icon': 'i-exam'},
 }
 
 SECTION_TITLES = {
+    'pregatire':  {'ro': 'Pregătire pentru examen', 'ru': 'Подготовка к экзамену'},
     'teme':       {'ro': 'Teme', 'ru': 'Темы'},
     'studiu':     {'ro': 'Materiale de studiu', 'ru': 'Учебные материалы'},
     'prezentari': {'ro': 'Prezentări', 'ru': 'Презентации'},
@@ -72,10 +76,13 @@ COURSES = [
         'short': {'ro': 'Măsuri de siguranță, codificări de alertă, balistică, cartușe, armament și legislație.',
                   'ru': 'Меры безопасности, коды тревоги, баллистика, патроны, оружие и законодательство.'},
         'desc': {'ro': 'Cadrul normativ al instrucției tragerii, măsurile de siguranță și codificările de alertă, balistica, cartușele, '
-                       'construcția armamentului (PM, AK-74) și legislația privind aplicarea armei de foc.',
+                       'construcția armamentului (PM, AK-74) și legislația privind aplicarea armei de foc, precum și un ghid de pregătire '
+                       'pentru examenul teoretic.',
                  'ru': 'Нормативная база огневой подготовки, меры безопасности и коды тревоги, баллистика, патроны, '
-                       'устройство оружия (ПМ, АК-74) и законодательство о применении огнестрельного оружия.'},
+                       'устройство оружия (ПМ, АК-74) и законодательство о применении огнестрельного оружия, а также пособие '
+                       'для подготовки к теоретическому экзамену.'},
         'sections': [
+            ('pregatire', ['trg-ghid-pregatire']),
             ('prezentari', ['trg-regulament-222', 'trg-masuri-siguranta', 'trg-masuri-222-311', 'trg-cps-311',
                             'trg-codificari', 'trg-legea-218-prez', 'trg-balistica', 'trg-cartuse']),
             ('suporturi', ['trg-tema-1-coercitive', 'trg-masuri-securitate', 'trg-suport-curs']),
@@ -314,6 +321,28 @@ DOCS = {
     ),
 
     # ------------------------------------------------------------------ INSTRUCȚIA TRAGERII
+    'trg-ghid-pregatire': dict(
+        # our own study guide (not an official document); sources and the PDF/text generator: tools/ghid-tragere/
+        src='instructia tragerii/Instructia_Tragerii_Ghid_de_pregatire.pdf', kind='pdf', type='prep', mode='text',
+        text_html='tools/ghid-tragere/text.html',
+        kicker={'ro': 'Examen teoretic · Întrebări și răspunsuri', 'ru': 'Теоретический экзамен · Вопросы и ответы'},
+        title={'ro': 'Ghid de pregătire: măsurile de siguranță, pistolul Makarov și Legea nr. 218/2012',
+               'ru': 'Пособие для подготовки: меры безопасности, пистолет Макарова и Закон № 218/2012'},
+        summary={'ro': 'Ghid de pregătire pentru examenul teoretic, întocmit după materialele cursului: 41 de întrebări cu răspunsuri, '
+                       'fișa recapitulativă cu cifrele de reținut și un test grilă de 30 de întrebări cu răspunsurile.',
+                 'ru': 'Пособие для подготовки к теоретическому экзамену, составленное по материалам курса: 41 вопрос с ответами, '
+                       'сводка цифр, которые нужно запомнить, и тест из 30 вопросов с ответами.'},
+        points={'ro': ['Partea I — măsurile de siguranță: regulile fundamentale (Ord. 222 și 311), încetarea focului, interdicțiile, curățirea armei, CPS, comenzile din poligon, codificările de alertă, arma în serviciu.',
+                       'Partea II — pistolul Makarov: calitățile de luptă, cele 7 piese și mecanisme principale, demontarea și montarea, normativele de control.',
+                       'Partea III — Legea nr. 218/2012: noțiunile, subiecții, condițiile și obligațiile, temeiurile aplicării armei (art. 10), somația (art. 11), restricțiile (art. 12), răspunderea și controlul.',
+                       'Partea IV — fișa recapitulativă, testul grilă de 30 de întrebări și răspunsurile, cu trimitere la întrebarea din ghid.',
+                       'Material de pregătire, nu document oficial: formulările urmează materialele cursului; la neclarități verificați sursa (suportul de curs, ordinele MAI, Legea nr. 218/2012).'],
+                'ru': ['Часть I — меры безопасности: основные правила (Приказы № 222 и 311), прекращение огня, запреты, чистка оружия, CPS, команды на стрельбище, коды тревоги, оружие на службе.',
+                       'Часть II — пистолет Макарова: боевые свойства, 7 основных частей и механизмов, разборка и сборка, контрольные нормативы.',
+                       'Часть III — Закон № 218/2012: понятия, субъекты, условия и обязанности, основания применения оружия (ст. 10), предупреждение (ст. 11), ограничения (ст. 12), ответственность и контроль.',
+                       'Часть IV — сводка, тест из 30 вопросов и ответы со ссылкой на вопрос в пособии.',
+                       'Учебное пособие, а не официальный документ: формулировки следуют материалам курса; при сомнениях сверяйтесь с источником (конспект, приказы МВД, Закон № 218/2012).']},
+    ),
     'trg-regulament-222': dict(
         src='instructia tragerii/Regulamentul de tragere.ppt', kind='slides', type='presentation',
         kicker={'ro': 'Ordinul MAI nr. 222/2017', 'ru': 'Приказ МВД № 222/2017'},

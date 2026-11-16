@@ -734,6 +734,21 @@ def pdf_html(doc, keep):
     return finish_html(blocks)
 
 
+def fragment_html(path, page_texts):
+    """Text view from a hand-made HTML fragment (meta['text_html'], e.g. written by tools/ghid-tragere/make.py)
+    instead of the PDF heuristics; page markers are placed by the PDF's page texts."""
+    with open(path, encoding='utf-8') as f:
+        blocks = list(ET.fromstring('<root>' + f.read() + '</root>'))
+    # running headers/footers ("Ghid de pregătire", "3 / 23") would be taken for the start of every page
+    lines = [[l.strip() for l in t.splitlines() if l.strip()] for t in page_texts]
+    seen = Counter(l for ls in lines for l in set(ls))
+    running = {l for l, n in seen.items() if n >= max(3, len(lines) * 0.3)}
+    page_texts = ['\n'.join(l for l in ls if l not in running and not re.fullmatch(r'\d+(\s*/\s*\d+)?', l)) for ls in lines]
+    if len(page_texts) > 1:
+        blocks = insert_page_markers(blocks, page_texts)
+    return finish_html(blocks)
+
+
 # ----------------------------------------------------------------------------- OCR (scanned PDFs)
 def ocr_fix(s):
     s = s.replace('ä', 'ă').replace('Ä', 'Ă').replace('§', 'ș')
@@ -780,7 +795,11 @@ def stamps_of(meta, src):
     base = [st.st_size, int(st.st_mtime), {k: meta.get(k) for k in ('kind', 'redact', 'redact_re', 'skip_pages', 'src')}]
     if meta.get('blur_pages'):  # only where used, so the stamps of the other documents stay valid
         base.append({'blur_pages': meta['blur_pages']})
-    return _sha([IMG_VERSION, base]), _sha([TXT_VERSION, base, meta.get('media')])
+    txt = [TXT_VERSION, base, meta.get('media')]
+    if meta.get('text_html'):  # likewise: the hand-made text version only counts where it is used
+        th = os.stat(os.path.join(ROOT, meta['text_html']))
+        txt.append([meta['text_html'], th.st_size, int(th.st_mtime)])
+    return _sha([IMG_VERSION, base]), _sha(txt)
 
 
 def legacy_stamp(meta, src):  # stamp format of the first builds (images + text together, BUILD_VERSION 4)
@@ -844,6 +863,9 @@ def build_doc(doc_id, meta, src, force=False):
         payload['slides'] = slides
     elif kind == 'doc':
         html, toc = docx_html(ox, doc_id, out_dir, [red(doc[p].get_text()) for p in keep])
+        payload['html'], payload['toc'] = html, toc
+    elif kind == 'pdf' and meta.get('text_html'):
+        html, toc = fragment_html(os.path.join(ROOT, meta['text_html']), [doc[p].get_text() for p in keep])
         payload['html'], payload['toc'] = html, toc
     elif kind == 'pdf':
         html, toc = pdf_html(doc, keep)

@@ -10,7 +10,7 @@ Toate materialele disciplinelor se citesc direct pe site, de pe telefon sau calc
 |---|---|
 | Instrucția de front | prezentare, instrucțiune metodică (pasul de defilare), Regulamentul instrucției de front, Ordinele MAI nr. 493/2024 și nr. 54/2024, HG nr. 676/2023 |
 | AROP | Tema 1–3: menținerea, asigurarea și restabilirea ordinii publice |
-| Instrucția tragerii | 8 prezentări (măsuri de siguranță, codificări de alertă, balistică, cartușe…), suporturi de curs, Legile nr. 218/2012 și nr. 130/2012, Ordinele MAI nr. 222/2017 și nr. 311/2015, ghidul intervenției profesionale |
+| Instrucția tragerii | ghidul de pregătire pentru examenul teoretic (41 de întrebări cu răspunsuri, fișă recapitulativă, test grilă), 8 prezentări (măsuri de siguranță, codificări de alertă, balistică, cartușe…), suporturi de curs, Legile nr. 218/2012 și nr. 130/2012, Ordinele MAI nr. 222/2017 și nr. 311/2015, ghidul intervenției profesionale |
 | Prim ajutor | Suport vital bazal, Serviciul 112, sinteză, IPSSM 15/2020, Manualul european de prim ajutor |
 | TIP | Tema 1–5: tactica intervenției profesionale |
 | Alte cursuri | Modulul III: măsurile de cultivare a integrității instituționale; trimiteri la materialele comune cu alte cursuri |
@@ -36,6 +36,7 @@ data/search.js         indexul de căutare (generat)
 data/orar.js           orarul (editat manual)
 content/<material>/    imaginile paginilor/slide-urilor + doc.js cu textul (generat)
 tools/                 scripturile de conversie și catalogul materialelor
+tools/ghid-tragere/    sursa ghidului de pregătire la Instrucția tragerii (HTML) și scriptul make.py
 ```
 
 Fișierele originale (pptx/ppt/doc/pdf) nu sunt incluse în depozit — site-ul folosește versiunile convertite.
@@ -57,6 +58,10 @@ Necesar: Microsoft Office (Word, PowerPoint), Python 3 cu pachetele
    python tools\build.py
    ```
 4. Publicați modificările (`git add -A && git commit && git push`).
+
+**Ghidul de pregătire la Instrucția tragerii** este material propriu (nu document oficial): textul se editează în
+`tools/ghid-tragere/*.html`, apoi `python tools\ghid-tragere\make.py` refăce PDF-ul din `instrucția tragerii/`
+(cu Microsoft Edge) și versiunea pentru modul „Text” (`text.html`), după care se rulează `python tools\build.py`.
 
 ---
 

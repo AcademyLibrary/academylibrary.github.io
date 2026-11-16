@@ -522,6 +522,11 @@ a.item__title:focus-visible { outline: none; }
 .prose table { border-collapse: collapse; margin: 1rem 0; font-size: .92em; display: block; overflow-x: auto; max-width: 100%; }
 .prose td, .prose th { border: 1px solid var(--border-2); padding: .4rem .6rem; vertical-align: top; min-width: 60px; }
 .prose th { background: var(--surface-2); }
+.prose blockquote { margin: 1rem 0; padding: .7rem 1rem; border-left: 4px solid var(--gold-500); background: var(--surface-2); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.prose blockquote > :first-child { margin-top: 0; }
+.prose blockquote > :last-child { margin-bottom: 0; }
+.prose figure { margin: 1rem 0; }
+.prose figure svg { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; padding: .5rem; background: #fff; border-radius: 6px; }
 .prose .page-sep { display: flex; align-items: center; gap: .6rem; margin: 1.6rem 0 1rem; color: var(--muted); font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .prose .page-sep::before, .prose .page-sep::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 .prose .art { font-weight: 700; }

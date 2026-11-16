@@ -1,0 +1,130 @@
+:root{
+  --ink:#1b2129; --muted:#5b6573; --line:#d9dee5; --soft:#f3f5f8; --soft2:#e9edf2;
+  --c1:#b42318; --c1s:#fdf1ef;   /* Partea I  – siguranță */
+  --c2:#1d4f91; --c2s:#eef3fa;   /* Partea II – Makarov   */
+  --c3:#0b6b52; --c3s:#ecf6f2;   /* Partea III – Legea 218 */
+  --c4:#6b3fa0; --c4s:#f4effa;   /* Recapitulare / test   */
+  --pc:var(--c1); --ps:var(--c1s);
+}
+@page{
+  size:A4; margin:17mm 15mm 16mm 15mm;
+  @top-left{content:"Instrucția tragerii · Ghid de pregătire"; font:8pt "Segoe UI",Arial,sans-serif; color:#8a94a3; vertical-align:bottom; padding-bottom:3mm}
+  @top-right{content:"Siguranță · PM Makarov · Legea 218"; font:8pt "Segoe UI",Arial,sans-serif; color:#8a94a3; vertical-align:bottom; padding-bottom:3mm}
+  @bottom-center{content:counter(page) " / " counter(pages); font:8pt "Segoe UI",Arial,sans-serif; color:#8a94a3; vertical-align:top; padding-top:3mm}
+}
+@page :first{ @top-left{content:none} @top-right{content:none} }
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+body{zoom:0.94; margin:0; background:#fff; color:var(--ink); font:9.6pt/1.42 "Segoe UI",Calibri,Arial,sans-serif; hyphens:manual}
+p{margin:0 0 1.8mm}
+b,strong{font-weight:650}
+em{font-style:italic}
+.muted{color:var(--muted)}
+.small{font-size:8.4pt}
+.nowrap{white-space:nowrap}
+
+/* ---------- părți ---------- */
+.part{break-before:page}
+.p1{--pc:var(--c1); --ps:var(--c1s)}
+.p2{--pc:var(--c2); --ps:var(--c2s)}
+.p3{--pc:var(--c3); --ps:var(--c3s)}
+.p4{--pc:var(--c4); --ps:var(--c4s)}
+.part-head{display:flex; align-items:flex-end; gap:5mm; border-bottom:2.2pt solid var(--pc); padding-bottom:2.5mm; margin-bottom:5mm}
+.part-num{font:700 30pt/0.9 "Segoe UI",Arial,sans-serif; color:var(--pc)}
+.part-title{font:700 17pt/1.15 "Segoe UI",Arial,sans-serif; margin:0}
+.part-sub{font-size:9pt; color:var(--muted); margin-top:1mm}
+h3.sec{font:700 11.5pt/1.25 "Segoe UI",Arial,sans-serif; color:var(--pc); margin:4.6mm 0 2.2mm; break-after:avoid}
+h3.sec:first-of-type{margin-top:0}
+h4{font:650 9.8pt/1.3 "Segoe UI",Arial,sans-serif; margin:3mm 0 1.5mm; break-after:avoid}
+
+/* ---------- întrebare + răspuns ---------- */
+.q{border-left:2.4pt solid var(--pc); padding:0.4mm 0 0.4mm 4mm; margin:0 0 3.4mm}
+.q.keep{break-inside:avoid}
+.qh{display:flex; gap:2.5mm; align-items:baseline; font:650 10.3pt/1.3 "Segoe UI",Arial,sans-serif; margin:0 0 1.6mm; break-after:avoid}
+.qn{flex:none; font:700 8pt/1 "Segoe UI",Arial,sans-serif; color:#fff; background:var(--pc); border-radius:2mm; padding:1mm 1.6mm 0.9mm}
+.src{font-size:7.8pt; color:var(--muted); margin-top:1mm}
+
+/* ---------- liste ---------- */
+ul,ol{margin:0 0 2.2mm; padding-left:5mm}
+li{margin:0 0 0.6mm}
+li::marker{color:var(--pc)}
+ol.alpha{list-style:none; padding-left:0; counter-reset:a}
+ol.alpha>li{position:relative; padding-left:6.5mm}
+ol.alpha>li::before{content:attr(data-l) ")"; position:absolute; left:0; font-weight:700; color:var(--pc)}
+ol.steps{list-style:none; padding-left:0; counter-reset:s}
+ol.steps>li{counter-increment:s; position:relative; padding-left:8mm; margin-bottom:1.6mm; break-inside:avoid}
+ol.steps>li::before{content:counter(s); position:absolute; left:0; top:-0.2mm; width:5.2mm; height:5.2mm; border-radius:50%; background:var(--pc); color:#fff; font:700 8pt/5.2mm "Segoe UI",Arial,sans-serif; text-align:center}
+.cols2{columns:2; column-gap:7mm}
+.cols2>li{break-inside:avoid}
+
+/* ---------- casete ---------- */
+.box{background:var(--ps); border-radius:2mm; padding:2.6mm 3.6mm; margin:2mm 0 3.5mm; break-inside:avoid}
+.box>.bt{font:700 8.4pt/1.2 "Segoe UI",Arial,sans-serif; text-transform:uppercase; letter-spacing:.04em; color:var(--pc); margin-bottom:1.2mm}
+.box.warn{background:#fff6e5; border-left:2.4pt solid #c27c0e}
+.box.warn>.bt{color:#9a5b00}
+.box.grey{background:var(--soft)}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.quote{font-family:Georgia,"Cambria",serif; font-size:9.4pt; font-style:italic}
+.formula{display:inline-block; font:700 9.6pt/1.3 "Segoe UI",Arial,sans-serif; background:#fff; border:1pt solid var(--pc); border-radius:1.5mm; padding:0.6mm 2mm; margin:0.6mm 0}
+
+/* ---------- tabele ---------- */
+table{border-collapse:collapse; width:100%; margin:1mm 0 3.5mm; font-size:9pt; break-inside:auto}
+th,td{border-bottom:0.6pt solid var(--line); padding:1.05mm 2mm; text-align:left; vertical-align:top}
+thead th{background:var(--pc); color:#fff; font-weight:650; border-bottom:none}
+tbody tr:nth-child(even) td{background:var(--soft)}
+tr{break-inside:avoid}
+td.num,th.num{text-align:right; white-space:nowrap}
+td.k{font-weight:650}
+.tbl-c td,.tbl-c th{text-align:center}
+.tbl-c td:first-child,.tbl-c th:first-child,.tbl-c td:nth-child(2),.tbl-c th:nth-child(2){text-align:left}
+
+/* ---------- copertă ---------- */
+.cover-band{background:linear-gradient(135deg,#7d1a12 0%,#b42318 55%,#d0442f 100%); color:#fff; border-radius:3mm; padding:7mm 8mm 6.5mm; margin-bottom:4.5mm}
+.cover-kicker{font:600 8.6pt/1 "Segoe UI",Arial,sans-serif; letter-spacing:.12em; text-transform:uppercase; opacity:.85}
+.cover-title{font:700 24pt/1.05 "Segoe UI",Arial,sans-serif; margin:3mm 0 2.5mm}
+.cover-sub{font:400 11.5pt/1.35 "Segoe UI",Arial,sans-serif; opacity:.95}
+.cover-chips{display:flex; gap:2mm; flex-wrap:wrap; margin-top:4mm}
+.chip{font:600 8.4pt/1 "Segoe UI",Arial,sans-serif; background:rgba(255,255,255,.16); border:0.8pt solid rgba(255,255,255,.45); border-radius:10mm; padding:1.4mm 3mm}
+.toc{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:4mm 6mm; margin:0 0 5mm}
+.toc-part{min-width:0; overflow:hidden}
+.toc-part{border-top:2pt solid var(--pc); padding-top:2mm}
+.toc-part h5{font:700 10pt/1.2 "Segoe UI",Arial,sans-serif; margin:0 0 1.5mm; color:var(--pc)}
+.toc-part a{color:var(--ink); text-decoration:none}
+.toc-row{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2mm; font-size:8.4pt; line-height:1.42}
+.toc-row .t{min-width:0; overflow:hidden; white-space:nowrap}
+.toc-row .t::after{content:" . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."; color:#b7bec8}
+.toc-row .pg{flex:none; font-weight:650; color:var(--pc); min-width:5mm; text-align:right}
+.top10{counter-reset:t; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:1.6mm 5mm; list-style:none; padding:0; margin:0}
+.top10 li{counter-increment:t; position:relative; padding-left:7mm; font-size:8.7pt; line-height:1.36; margin:0; break-inside:avoid}
+.top10 li::before{content:counter(t); position:absolute; left:0; top:0.2mm; width:5mm; height:5mm; border-radius:1.4mm; background:var(--c1); color:#fff; font:700 7.8pt/5mm "Segoe UI",Arial,sans-serif; text-align:center}
+
+/* ---------- figuri ---------- */
+figure{margin:2mm 0 4mm; break-inside:avoid}
+figcaption{font-size:8pt; color:var(--muted); margin-top:1.2mm}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+
+/* ---------- comparație 222 / 311 ---------- */
+.cmp{display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin:1mm 0 3.5mm}
+.cmp>div{border:0.8pt solid var(--line); border-radius:2mm; padding:2.4mm 3.2mm; break-inside:avoid}
+.cmp h5{margin:0 0 1.5mm; font:700 9pt/1.2 "Segoe UI",Arial,sans-serif; color:var(--pc)}
+.cmp ul{margin:0; padding-left:4.5mm}
+.diff{background:#fff2b8; padding:0 0.6mm; border-radius:0.6mm}
+
+/* ---------- coduri de alertă ---------- */
+.code{display:inline-block; min-width:21mm; text-align:center; font:700 8.2pt/1 "Segoe UI",Arial,sans-serif; border-radius:1.2mm; padding:1.3mm 1.6mm}
+.c-alb{background:#fff; border:0.9pt solid #9aa3ad; color:#333}
+.c-galben{background:#f6d32d; color:#3d3200}
+.c-orange{background:#f08c1a; color:#fff}
+.c-rosu{background:#d22b2b; color:#fff}
+.c-rosufoc{background:#7a0f0f; color:#fff}
+
+/* ---------- test grilă ---------- */
+.mcq{break-inside:avoid; margin:0 0 3.2mm}
+.mcq .qq{font-weight:650; margin-bottom:0.8mm}
+.mcq ol{list-style:none; padding-left:5mm; margin:0}
+.mcq li{margin:0 0 0.3mm}
+.key{display:grid; grid-template-columns:repeat(6,1fr); gap:1.5mm 3mm; font-size:9pt}
+.key span{background:var(--soft); border-radius:1.2mm; padding:1mm 2mm}
+.key b{color:var(--c4)}
+
+.cmp.split>div{break-inside:auto}
